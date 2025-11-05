@@ -1,0 +1,89 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# PyTorch
+*.pth
+*.pt
+
+# Data
+data/clean/
+data/noisy/
+data/train/
+data/val/
+data/test/
+
+# Audio files
+*.wav
+*.flac
+*.mp3
+*.aac
+*.ogg
+*.m4a
+*.wma
+*.opus
+
+# Image files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+*.webp
+*.ico
+*.tiff
+*.tif
+
+# Logs & Checkpoints
+logs/
+checkpoints/
+runs/
+*.log
+
+# Tensorboard
+events.out.tfevents.*
+
+# Evaluation
+evaluation/outputs/
+evaluation/results.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Config (개인 설정은 제외할 수 있음)
+# config.yaml
+

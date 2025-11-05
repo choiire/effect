@@ -1,0 +1,41 @@
+data:
+  batch_size: 16
+  num_workers: 4
+  sample_rate: 16000
+  segment_length: 64000
+  train_clean_dir: data/train/clean
+  train_noisy_dir: data/train/noisy
+  val_clean_dir: data/val/clean
+  val_noisy_dir: data/val/noisy
+experiment_name: baseline
+loss:
+  si_sdr_weight: 1.0
+  stft_weight: 0.5
+  time_weight: 0.1
+model:
+  apply_hum_removal: true
+  apply_pop_suppression: true
+  apply_proximity_correction: true
+  hop_length: 256
+  hum_freq: 60
+  model_type: waveform_unet
+  n_channels: 32
+  n_fft: 512
+  output_mode: mask
+  use_preprocessing: true
+project_name: microphone_noise_reduction
+seed: 42
+training:
+  checkpoint_dir: checkpoints
+  device: cuda
+  early_stopping_patience: 20
+  factor: 0.5
+  learning_rate: 0.001
+  log_dir: logs
+  log_every_n_steps: 50
+  mixed_precision: true
+  num_epochs: 100
+  patience: 10
+  save_every_n_epochs: 5
+  scheduler: reduce_on_plateau
+  weight_decay: 0.0001
