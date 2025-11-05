@@ -40,8 +40,10 @@ class SpeechEnhancementDataset(Dataset):
         self.segment_length = segment_length
         self.augment = augment
         
-        # 파일 목록
-        self.noisy_files = sorted(list(self.noisy_dir.glob("*.wav")))
+        # 파일 목록 (.wav, .flac 지원)
+        noisy_wav = list(self.noisy_dir.glob("*.wav"))
+        noisy_flac = list(self.noisy_dir.glob("*.flac"))
+        self.noisy_files = sorted(noisy_wav + noisy_flac)
         
         if len(self.noisy_files) == 0:
             raise ValueError(f"잡음 음성 파일을 찾을 수 없습니다: {noisy_dir}")
@@ -61,12 +63,7 @@ class SpeechEnhancementDataset(Dataset):
         noisy_path = self.noisy_files[idx]
         
         # 대응하는 clean 파일 찾기
-        # noisy: xxx_noisy.wav -> clean: xxx_clean.wav
-        clean_filename = noisy_path.stem.replace("_noisy", "_clean") + ".wav"
-        clean_path = self.clean_dir / clean_filename
-        
-        if not clean_path.exists():
-            raise FileNotFoundError(f"Clean 파일을 찾을 수 없습니다: {clean_path}")
+        clean_path = self._resolve_clean_path(noisy_path)
         
         # 오디오 로드
         noisy, _ = librosa.load(noisy_path, sr=self.sample_rate)
@@ -108,6 +105,50 @@ class SpeechEnhancementDataset(Dataset):
         clean = torch.FloatTensor(clean)
         
         return noisy, clean
+
+    def _resolve_clean_path(self, noisy_path: Path) -> Path:
+        """noisy 파일명으로부터 clean 파일 경로 추론"""
+        candidates = []
+        stem = noisy_path.stem
+        ext = noisy_path.suffix
+
+        # 기본: 동일 파일명
+        candidates.append(self.clean_dir / noisy_path.name)
+
+        # _noisy 접미사 패턴 대응
+        if stem.endswith("_noisy"):
+            base = stem[:-6]
+            candidates.append(self.clean_dir / f"{base}_clean{ext}")
+            candidates.append(self.clean_dir / f"{base}{ext}")
+        else:
+            candidates.append(self.clean_dir / f"{stem}_clean{ext}")
+
+        # 확장자 변형 (.wav <-> .flac)
+        alt_exts = {".wav", ".flac"}
+        for alt_ext in alt_exts:
+            if alt_ext == ext:
+                continue
+            candidates.append(self.clean_dir / f"{stem}{alt_ext}")
+            if stem.endswith("_noisy"):
+                base = stem[:-6]
+                candidates.append(self.clean_dir / f"{base}{alt_ext}")
+                candidates.append(self.clean_dir / f"{base}_clean{alt_ext}")
+            else:
+                candidates.append(self.clean_dir / f"{stem}_clean{alt_ext}")
+
+        # 중복 제거하면서 존재 여부 확인
+        seen = set()
+        for candidate in candidates:
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            if candidate.exists():
+                return candidate
+
+        candidate_list = "\n  - ".join(str(path) for path in seen)
+        raise FileNotFoundError(
+            "Clean 파일을 찾을 수 없습니다. 확인한 경로:\n  - " + candidate_list
+        )
 
 
 def create_dataloaders(
